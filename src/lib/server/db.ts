@@ -71,4 +71,42 @@ CREATE TABLE IF NOT EXISTS rounds (
 
 db.exec(schema);
 
+
+export const recalculatePlayerStats = (playerName: string) => {
+    // 1. Get all finished matches for this player
+    const matches = db.prepare(`
+        SELECT m.*, 
+               t1.player1_name as t1_p1, t1.player2_name as t1_p2,
+               t2.player1_name as t2_p1, t2.player2_name as t2_p2
+        FROM matches m
+        JOIN teams t1 ON m.team_a_id = t1.id
+        JOIN teams t2 ON m.team_b_id = t2.id
+        WHERE m.is_finished = 1 
+          AND (t1.player1_name = $name OR t1.player2_name = $name OR t2.player1_name = $name OR t2.player2_name = $name)
+    `).all({ $name: playerName }) as any[];
+
+    let played = 0;
+    let won = 0;
+    let points = 0;
+
+    for (const m of matches) {
+        played++;
+
+        const isTeamA = (m.t1_p1 === playerName || m.t1_p2 === playerName);
+        const myScore = isTeamA ? m.score_a : m.score_b;
+        const opponentScore = isTeamA ? m.score_b : m.score_a;
+
+        points += myScore;
+        if (myScore > opponentScore) {
+            won++;
+        }
+    }
+
+    db.prepare(`
+        UPDATE players 
+        SET matches_played = ?, matches_won = ?, total_points = ? 
+        WHERE name = ?
+    `).run(played, won, points, playerName);
+};
+
 export default db;

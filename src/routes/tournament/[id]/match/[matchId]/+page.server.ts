@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import db from '$lib/server/db';
+import db, { recalculatePlayerStats } from '$lib/server/db';
 import { randomUUID } from 'node:crypto';
 
 export const load = async ({ params, parent }) => {
@@ -51,9 +51,9 @@ export const actions = {
         if (capotA) { scoreA = 252; scoreB = 0; }
         else if (capotB) { scoreB = 252; scoreA = 0; }
 
-        // Belote adds 20
-        if (beloteA) scoreA += 20;
-        if (beloteB) scoreB += 20;
+        // REMOVED: Belote addition (handled by client input)
+        // if (beloteA) scoreA += 20;
+        // if (beloteB) scoreB += 20;
 
         // Check if round exists
         const existing = db.prepare('SELECT id FROM rounds WHERE match_id = ? AND round_index = ?').get(params.matchId, roundIndex) as any;
@@ -130,6 +130,12 @@ export const actions = {
             const playersA = [matchData.t1_p1, matchData.t1_p2];
             const playersB = [matchData.t2_p1, matchData.t2_p2];
 
+            // NEW: Recalculate stats from scratch for all players involved
+            // This ensures data integrity even if matches are deleted later
+            const allPlayers = [...playersA, ...playersB];
+            allPlayers.forEach(name => recalculatePlayerStats(name));
+
+            /* OLD Incremental Logic - Removed
             const wonA = totalA > totalB;
             const wonB = totalB > totalA;
 
@@ -145,6 +151,7 @@ export const actions = {
 
             playersA.forEach(p => updateStat(p, wonA, Number(totalA)));
             playersB.forEach(p => updateStat(p, wonB, Number(totalB)));
+            */
         }
 
         throw redirect(303, `/tournament/${params.id}`);

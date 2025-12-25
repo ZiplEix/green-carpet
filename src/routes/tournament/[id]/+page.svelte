@@ -36,7 +36,7 @@
                             <th class="pb-2 text-center">J</th>
                             <th class="pb-2 text-center">V</th>
                             <th class="pb-2 text-center">Diff</th>
-                            <th class="pb-2 text-right">Pts</th>
+                            <th class="pb-2 text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
@@ -60,7 +60,7 @@
                                 >
                                 <td
                                     class="py-3 text-right font-bold text-lg text-amber-400"
-                                    >{team.points}</td
+                                    >{team.total_score}</td
                                 >
                             </tr>
                         {/each}

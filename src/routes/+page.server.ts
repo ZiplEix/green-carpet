@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import db from '$lib/server/db';
+import db, { recalculatePlayerStats } from '$lib/server/db';
 import { randomUUID } from 'node:crypto';
 
 export const load = async () => {
@@ -116,6 +116,13 @@ export const actions = {
 
         try {
             db.prepare('DELETE FROM tournaments WHERE id = ?').run(id);
+
+            // Recalculate stats for ALL players to ensure everything is synced
+            // Since we don't know exactly who was in the tourney easily after deletion (unless we fetched before),
+            // and the player count is small, this is safe.
+            const allPlayers = db.prepare('SELECT name FROM players').all() as any[];
+            allPlayers.forEach(p => recalculatePlayerStats(p.name));
+
         } catch (err) {
             return fail(500, { error: 'Impossible de supprimer ce tournoi.' });
         }

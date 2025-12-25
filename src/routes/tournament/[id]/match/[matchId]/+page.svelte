@@ -39,23 +39,57 @@
     );
 
     // Auto-calculate opponent score (standard 162 total)
+    // Note: Input score INCLUDE Belote if checked (Client handles the +20)
     function onScoreChange(index: number, team: "a" | "b") {
         const round = rounds[index];
         if (team === "a" && round.score_a !== "") {
-            let val =
-                typeof round.score_a === "string"
-                    ? parseInt(round.score_a)
-                    : round.score_a;
-            if (!isNaN(val as number) && (val as number) <= 162)
-                round.score_b = 162 - (val as number);
+            let val = parseInt(String(round.score_a));
+            let cardVal = val - (round.belote_a ? 20 : 0);
+
+            // Valid card score is 0-162
+            if (!isNaN(cardVal) && cardVal >= 0 && cardVal <= 162) {
+                round.score_b = 162 - cardVal;
+            }
         } else if (team === "b" && round.score_b !== "") {
-            let val =
-                typeof round.score_b === "string"
-                    ? parseInt(round.score_b)
-                    : round.score_b;
-            if (!isNaN(val as number) && (val as number) <= 162)
-                round.score_a = 162 - (val as number);
+            let val = parseInt(String(round.score_b));
+            let cardVal = val - (round.belote_b ? 20 : 0);
+
+            if (!isNaN(cardVal) && cardVal >= 0 && cardVal <= 162) {
+                round.score_a = 162 - cardVal;
+            }
         }
+    }
+
+    function onBeloteChange(index: number, team: "a" | "b") {
+        const round = rounds[index];
+        let val =
+            parseInt(String(team === "a" ? round.score_a : round.score_b)) || 0;
+
+        // Add or remove 20 points
+        if (team === "a") {
+            if (round.belote_a) val += 20;
+            else val -= 20;
+            round.score_a = val < 0 ? 0 : val;
+        } else {
+            if (round.belote_b) val += 20;
+            else val -= 20;
+            round.score_b = val < 0 ? 0 : val;
+        }
+    }
+
+    // Handle Capot selection (immediate score update)
+    function onCapotChange(index: number, team: "a" | "b") {
+        const round = rounds[index];
+        if (team === "a" && round.capot_a) {
+            round.score_a = 252;
+            round.score_b = 0;
+            round.capot_b = false; // Mutually exclusive
+        } else if (team === "b" && round.capot_b) {
+            round.score_b = 252;
+            round.score_a = 0;
+            round.capot_a = false; // Mutually exclusive
+        }
+        // If unchecked, we leave values as is (user can correct them)
     }
 
     let totalA = $derived(
@@ -72,9 +106,9 @@
                 (r) => r.round_index === serverRound.round_index,
             );
             if (local) {
+                // Only update 'saved' status, don't overwrite local values while editing
+                // unless we want to force re-calcs. Ideally trust local for immediate UI.
                 local.saved = true;
-                // Optional: Force sync values if server normalized them?
-                // For now, just marking saved is enough visual feedback.
             }
         });
     });
@@ -172,6 +206,7 @@
                                     name="beloteA"
                                     class="hidden"
                                     bind:checked={round.belote_a}
+                                    onchange={() => onBeloteChange(i, "a")}
                                 />
                             </label>
                             <label
@@ -185,6 +220,7 @@
                                     name="capotA"
                                     class="hidden"
                                     bind:checked={round.capot_a}
+                                    onchange={() => onCapotChange(i, "a")}
                                 />
                             </label>
                         </div>
@@ -216,6 +252,7 @@
                                     name="beloteB"
                                     class="hidden"
                                     bind:checked={round.belote_b}
+                                    onchange={() => onBeloteChange(i, "b")}
                                 />
                             </label>
                             <label
@@ -229,6 +266,7 @@
                                     name="capotB"
                                     class="hidden"
                                     bind:checked={round.capot_b}
+                                    onchange={() => onCapotChange(i, "b")}
                                 />
                             </label>
                         </div>

@@ -27,7 +27,7 @@ export const load = async ({ params, parent }) => {
                 id: t.id,
                 played: 0,
                 wins: 0,
-                points: 0,
+                total_score: 0,
                 diff: 0
             });
         });
@@ -44,22 +44,19 @@ export const load = async ({ params, parent }) => {
                     TeamA.diff += (m.score_a - m.score_b);
                     TeamB.diff += (m.score_b - m.score_a);
 
+                    TeamA.total_score += m.score_a;
+                    TeamB.total_score += m.score_b;
+
                     if (m.score_a > m.score_b) {
                         TeamA.wins++;
-                        TeamA.points += 3;
                     } else if (m.score_b > m.score_a) {
                         TeamB.wins++;
-                        TeamB.points += 3;
-                    } else {
-                        // Draw (rare in Belote but possible?)
-                        TeamA.points += 1;
-                        TeamB.points += 1;
                     }
                 }
             }
         });
 
-        standings = Array.from(stats.values()).sort((a, b) => b.points - a.points || b.diff - a.diff);
+        standings = Array.from(stats.values()).sort((a, b) => b.total_score - a.total_score || b.diff - a.diff);
     }
 
     return {
