@@ -4,8 +4,7 @@ services:
     ports:
       - "3012:3000"
     environment:
-      - NODE_ENV: production
-      - DB_PATH: /app/data/belote.db
-      - PASSWORD: ${PASSWORD}
+      - NODE_ENV: "production"
+      - DB_PATH: "/app/data/belote.db"
     volumes:
       - ./data:/app/data
