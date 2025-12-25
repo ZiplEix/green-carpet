@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
@@ -11,9 +11,9 @@ try {
     // ignore
 }
 
-const db = new Database(dbPath);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const db = new Database(dbPath, { create: true });
+db.exec('PRAGMA journal_mode = WAL');
+db.exec('PRAGMA foreign_keys = ON');
 
 // Initialize Schema
 const schema = `
