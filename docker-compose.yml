@@ -1,0 +1,11 @@
+services:
+  app:
+    build: ./
+    ports:
+      - "3012:3000"
+    environment:
+      - NODE_ENV: production
+      - DB_PATH: /app/data/belote.db
+      - PASSWORD: ${PASSWORD}
+    volumes:
+      - ./data:/app/data

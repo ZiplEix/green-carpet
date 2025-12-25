@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+    --font-serif: "Merriweather", "Georgia", serif;
+    --font-sans: "Inter", "system-ui", sans-serif;
+    
+    --color-carpet-green: #2d5a27;
+    --color-carpet-dark: #1a3c1e;
+    --color-wood-light: #d4a373;
+    --color-wood-dark: #8b5a2b;
+    --color-amber-gold: #fbbf24;
+}
+
+:root {
+    --carpet-texture: url("https://www.transparenttextures.com/patterns/felt.png"); /* Placeholder or CSS pattern */
+}
+
+body {
+    @apply font-sans text-gray-100 antialiased;
+    background-color: var(--color-carpet-green);
+    background-image: 
+        radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.3) 100%),
+        var(--carpet-texture);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-amber-gold drop-shadow-md;
+}
+
+.wood-border {
+    @apply border-4 border-wood-dark rounded-xl shadow-xl bg-wood-light/10;
+    box-shadow: 
+        inset 0 0 20px rgba(0,0,0,0.5),
+        0 10px 20px rgba(0,0,0,0.5);
+}
+
+.card {
+    @apply bg-carpet-dark/80 backdrop-blur-sm border border-white/10 rounded-lg p-6 shadow-lg;
+}
+
+.btn-primary {
+    @apply px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95;
+    background: linear-gradient(180deg, var(--color-wood-light) 0%, var(--color-wood-dark) 100%);
+    color: #3e2723;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+.input-field {
+    @apply w-full px-4 py-2 rounded bg-black/30 border border-white/10 focus:border-amber-gold focus:ring-1 focus:ring-amber-gold outline-none transition-colors text-white placeholder-gray-400;
+}
