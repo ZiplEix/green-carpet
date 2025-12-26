@@ -3,6 +3,8 @@
     import { page } from "$app/stores";
     import type { PageData } from "./$types";
 
+    import { tick } from "svelte";
+
     let { data }: { data: PageData } = $props();
 
     interface RoundState {
@@ -60,7 +62,11 @@
         }
     }
 
-    function onBeloteChange(index: number, team: "a" | "b") {
+    async function onBeloteChange(
+        index: number,
+        team: "a" | "b",
+        event?: Event,
+    ) {
         const round = rounds[index];
         let val =
             parseInt(String(team === "a" ? round.score_a : round.score_b)) || 0;
@@ -75,10 +81,18 @@
             else val -= 20;
             round.score_b = val < 0 ? 0 : val;
         }
+
+        // Wait for DOM to update with new score before saving
+        await tick();
+        if (event) autoSave(event);
     }
 
     // Handle Capot selection (immediate score update)
-    function onCapotChange(index: number, team: "a" | "b") {
+    async function onCapotChange(
+        index: number,
+        team: "a" | "b",
+        event?: Event,
+    ) {
         const round = rounds[index];
         if (team === "a" && round.capot_a) {
             round.score_a = 252;
@@ -89,7 +103,10 @@
             round.score_a = 0;
             round.capot_a = false; // Mutually exclusive
         }
-        // If unchecked, we leave values as is (user can correct them)
+
+        // Wait for DOM to update
+        await tick();
+        if (event) autoSave(event);
     }
 
     let totalA = $derived(
@@ -163,7 +180,6 @@
                     };
                 }}
                 class="contents group"
-                onchange={autoSave}
             >
                 <input
                     type="hidden"
@@ -191,6 +207,7 @@
                             class="input-field text-center font-mono text-lg h-12"
                             bind:value={round.score_a}
                             oninput={() => onScoreChange(i, "a")}
+                            onchange={autoSave}
                             placeholder="0"
                         />
 
@@ -206,7 +223,7 @@
                                     name="beloteA"
                                     class="hidden"
                                     bind:checked={round.belote_a}
-                                    onchange={() => onBeloteChange(i, "a")}
+                                    onchange={(e) => onBeloteChange(i, "a", e)}
                                 />
                             </label>
                             <label
@@ -220,7 +237,7 @@
                                     name="capotA"
                                     class="hidden"
                                     bind:checked={round.capot_a}
-                                    onchange={() => onCapotChange(i, "a")}
+                                    onchange={(e) => onCapotChange(i, "a", e)}
                                 />
                             </label>
                         </div>
@@ -237,6 +254,7 @@
                             class="input-field text-center font-mono text-lg h-12"
                             bind:value={round.score_b}
                             oninput={() => onScoreChange(i, "b")}
+                            onchange={autoSave}
                             placeholder="0"
                         />
 
@@ -252,7 +270,7 @@
                                     name="beloteB"
                                     class="hidden"
                                     bind:checked={round.belote_b}
-                                    onchange={() => onBeloteChange(i, "b")}
+                                    onchange={(e) => onBeloteChange(i, "b", e)}
                                 />
                             </label>
                             <label
@@ -266,7 +284,7 @@
                                     name="capotB"
                                     class="hidden"
                                     bind:checked={round.capot_b}
-                                    onchange={() => onCapotChange(i, "b")}
+                                    onchange={(e) => onCapotChange(i, "b", e)}
                                 />
                             </label>
                         </div>
